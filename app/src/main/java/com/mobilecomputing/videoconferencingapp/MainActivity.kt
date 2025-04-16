@@ -25,6 +25,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.mobilecomputing.videoconferencingapp.ui.theme.VideoConferencingAppTheme
 import kotlinx.coroutines.launch
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import androidx.credentials.CustomCredential
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,7 +113,7 @@ fun GoogleSignInButton(
     ) {
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId("GOOGLE_WEB_CLIENT_ID") // replace with your actual Google client ID
+            .setServerClientId("GoogleWebClientID") // replace with your actual Google client ID
             .setNonce(generateNonce())
             .build()
 
@@ -168,11 +171,17 @@ private fun handleSignInResponse(
     onSuccess: (String) -> Unit,
     onFailure: (String) -> Unit
 ) {
-    when (response.credential) {
-        is com.google.android.libraries.identity.googleid.GoogleIdTokenCredential -> {
-            val googleCredential = response.credential as com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-            val idToken = googleCredential.idToken
-            if (idToken != null) {
+    val credential = response.credential
+
+    when {
+        credential is CustomCredential &&
+                credential.type == "com.google.android.libraries.identity.googleid.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL" -> {
+            try {
+                // Parse the received CustomCredential as a GoogleIdTokenCredential
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                val idToken = googleIdTokenCredential.idToken
+
+                // Use the token to authenticate with Firebase
                 val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
                 auth.signInWithCredential(firebaseCredential)
                     .addOnCompleteListener { task ->
@@ -182,15 +191,29 @@ private fun handleSignInResponse(
                             onFailure("Firebase auth failed: ${task.exception?.message}")
                         }
                     }
-            } else {
-                onFailure("No ID token received from Google")
+            } catch (e: Exception) {
+                onFailure("Failed to process Google ID token: ${e.message}")
             }
         }
+        credential is GoogleIdTokenCredential -> {
+            // This is the original path for handling GoogleIdTokenCredential directly
+            val idToken = credential.idToken
+            val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+            auth.signInWithCredential(firebaseCredential)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        onSuccess("Signed in as ${auth.currentUser?.displayName}")
+                    } else {
+                        onFailure("Firebase auth failed: ${task.exception?.message}")
+                    }
+                }
+        }
         else -> {
-            onFailure("Unexpected credential type: ${response.credential.javaClass.simpleName}")
+            onFailure("Unexpected credential type: ${credential.javaClass.simpleName}")
         }
     }
 }
+
 
 private fun generateNonce(): String {
     val bytes = ByteArray(16)
