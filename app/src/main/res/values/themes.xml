@@ -15,8 +15,11 @@
      limitations under the License.
 -->
 <resources>
-
-    <style name="Theme.WebrtcSampleCompose" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
-    </style>
+  <style name="Theme.WebRTCApp" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:windowBackground">@android:color/white</item>
+    <item name="android:windowDisablePreview">true</item>
+    <item name="colorPrimary">#6469D9</item>
+    <item name="colorPrimaryDark">#5156B5</item>
+    <item name="colorAccent">#6469D9</item>
+  </style>
 </resources>

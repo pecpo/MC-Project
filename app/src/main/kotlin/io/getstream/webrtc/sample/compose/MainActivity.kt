@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import io.getstream.webrtc.sample.compose.ui.screens.SplashScreen
 import io.getstream.webrtc.sample.compose.ui.screens.stage.StageScreen
 import io.getstream.webrtc.sample.compose.ui.screens.video.VideoCallScreen
 import io.getstream.webrtc.sample.compose.ui.theme.WebrtcSampleComposeTheme
@@ -54,18 +55,22 @@ class MainActivity : ComponentActivity() {
     setContent {
       WebrtcSampleComposeTheme {
         CompositionLocalProvider(LocalWebRtcSessionManager provides sessionManager) {
-          // A surface container using the 'background' color from the theme
           Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
           ) {
+            var showSplash by remember { mutableStateOf(true) }
             var onCallScreen by remember { mutableStateOf(false) }
             val state by sessionManager.signalingClient.sessionStateFlow.collectAsState()
 
-            if (!onCallScreen) {
-              StageScreen(state = state) { onCallScreen = true }
+            if (showSplash) {
+              SplashScreen { showSplash = false }
             } else {
-              VideoCallScreen()
+              if (!onCallScreen) {
+                StageScreen(state = state) { onCallScreen = true }
+              } else {
+                VideoCallScreen()
+              }
             }
           }
         }
