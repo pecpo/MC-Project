@@ -19,6 +19,7 @@ package io.getstream.webrtc.sample.compose.webrtc.peer
 import android.content.Context
 import android.os.Build
 import io.getstream.log.taggedLogger
+import io.getstream.webrtc.sample.compose.webrtc.BackgroundBlurProcessor
 import kotlinx.coroutines.CoroutineScope
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -43,6 +44,7 @@ class StreamPeerConnectionFactory constructor(
 ) {
   private val webRtcLogger by taggedLogger("Call:WebRTC")
   private val audioLogger by taggedLogger("Call:AudioTrackCallback")
+  private val backgroundBlurProcessor = BackgroundBlurProcessor(context)
 
   val eglBaseContext: EglBase.Context by lazy {
     EglBase.create().eglBaseContext
@@ -244,7 +246,9 @@ class StreamPeerConnectionFactory constructor(
    * @return [VideoSource] that can be used to build tracks.
    */
   fun makeVideoSource(isScreencast: Boolean): VideoSource =
-    factory.createVideoSource(isScreencast)
+    factory.createVideoSource(isScreencast).apply {
+      setVideoProcessor(backgroundBlurProcessor) // Pass the processor directly
+    }
 
   /**
    * Builds a [VideoTrack] from the [factory] that can be used for regular video share (camera)

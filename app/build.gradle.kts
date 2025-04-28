@@ -76,4 +76,23 @@ dependencies {
 
   //theme
   implementation(libs.material)
+
+
+
+  // Image processing
+  implementation(libs.tensorflow.lite)
+  implementation(libs.tensorflow.lite.gpu)
+//  implementation(libs.segmentation.selfie.v1700)
+//  implementation(libs.tasks.vision)
+//  implementation("com.google.mediapipe:tasks-vision:0.10.10")
+//  implementation(libs.play.services.mlkit.subject.segmentation)
+  // ML Kit for segmentation
+  implementation ("com.google.mlkit:segmentation-selfie:16.0.0-beta4")
+
+// RenderScript for blur effects (usually included by default in Android)
+//  implementation ("androidx.renderscript:renderscript:1.0.0")
+  implementation ("jp.co.cyberagent.android:gpuimage:2.1.0")
+  implementation(libs.androidx.media3.exoplayer)
+  implementation(libs.core.ktx)
+  implementation(libs.vision.common)
 }
