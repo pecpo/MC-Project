@@ -17,6 +17,8 @@
 package io.getstream.webrtc.sample.compose.ui.screens.video
 
 import android.app.Activity
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,11 +42,23 @@ import androidx.compose.ui.unit.dp
 import io.getstream.webrtc.sample.compose.ui.components.VideoRenderer
 import io.getstream.webrtc.sample.compose.webrtc.sessions.LocalWebRtcSessionManager
 
+private const val TAG = "VideoCallScreen"
+
 @Composable
-fun VideoCallScreen() {
+fun VideoCallScreen(
+  onBackPressed: () -> Unit = {}
+) {
   val sessionManager = LocalWebRtcSessionManager.current
 
+  // Handle back button press
+  BackHandler {
+    Log.d(TAG, "Back button pressed, disconnecting and navigating back")
+    sessionManager.disconnect()
+    onBackPressed()
+  }
+
   LaunchedEffect(key1 = Unit) {
+    Log.d(TAG, "VideoCallScreen launched, initializing session")
     sessionManager.onSessionScreenReady()
   }
 
@@ -82,8 +96,6 @@ fun VideoCallScreen() {
       )
     }
 
-    val activity = (LocalContext.current as? Activity)
-
     VideoCallControls(
       modifier = Modifier
         .fillMaxWidth()
@@ -103,8 +115,9 @@ fun VideoCallScreen() {
           }
           CallAction.FlipCamera -> sessionManager.flipCamera()
           CallAction.LeaveCall -> {
+            Log.d(TAG, "Leave call button pressed, disconnecting and navigating back")
             sessionManager.disconnect()
-            activity?.finish()
+            onBackPressed()
           }
         }
       }
