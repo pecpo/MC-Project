@@ -59,10 +59,6 @@ fun VideoCallScreen() {
     val localVideoTrackState by sessionManager.localVideoTrackFlow.collectAsState(null)
     val localVideoTrack = localVideoTrackState
 
-    // Add transcription state
-    val transcriptionText by sessionManager.transcriptionFlow.collectAsState("")
-    val isTranscribing by sessionManager.isTranscribing.collectAsState(false)
-
     var callMediaState by remember { mutableStateOf(CallMediaState()) }
 
     if (remoteVideoTrack != null) {
@@ -88,12 +84,6 @@ fun VideoCallScreen() {
 
     val activity = (LocalContext.current as? Activity)
 
-    // Add transcription action to the controls
-    val actions = buildDefaultCallControlActions(callMediaState = callMediaState).toMutableList()
-    if (callMediaState.isMicrophoneEnabled) {
-      actions.add(2, createTranscriptionAction(isEnabled = isTranscribing))
-    }
-
     VideoCallControls(
       modifier = Modifier
         .fillMaxWidth()
@@ -110,16 +100,6 @@ fun VideoCallScreen() {
             val enabled = callMediaState.isCameraEnabled.not()
             callMediaState = callMediaState.copy(isCameraEnabled = enabled)
             sessionManager.enableCamera(enabled)
-            if (!enabled && isTranscribing) {
-              sessionManager.stopTranscription()
-            }
-          }
-          is CallAction.ToggleTranscription -> {
-            if (isTranscribing) {
-              sessionManager.stopTranscription()
-            } else {
-              sessionManager.startTranscription()
-            }
           }
           CallAction.FlipCamera -> sessionManager.flipCamera()
           CallAction.LeaveCall -> {

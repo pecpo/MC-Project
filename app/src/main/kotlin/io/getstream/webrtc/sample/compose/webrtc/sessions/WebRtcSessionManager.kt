@@ -19,7 +19,6 @@ package io.getstream.webrtc.sample.compose.webrtc.sessions
 import io.getstream.webrtc.sample.compose.webrtc.SignalingClient
 import io.getstream.webrtc.sample.compose.webrtc.peer.StreamPeerConnectionFactory
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.webrtc.VideoTrack
 
 interface WebRtcSessionManager {
@@ -41,8 +40,4 @@ interface WebRtcSessionManager {
   fun enableCamera(enabled: Boolean)
 
   fun disconnect()
-  val transcriptionFlow: StateFlow<String>
-  val isTranscribing: StateFlow<Boolean>
-  fun startTranscription()
-  fun stopTranscription()
 }
