@@ -29,6 +29,7 @@ import androidx.core.content.getSystemService
 import io.getstream.log.taggedLogger
 import io.getstream.webrtc.sample.compose.webrtc.SignalingClient
 import io.getstream.webrtc.sample.compose.webrtc.SignalingCommand
+import io.getstream.webrtc.sample.compose.webrtc.TranscriptionManager
 import io.getstream.webrtc.sample.compose.webrtc.audio.AudioHandler
 import io.getstream.webrtc.sample.compose.webrtc.audio.AudioSwitchHandler
 import io.getstream.webrtc.sample.compose.webrtc.peer.StreamPeerConnection
@@ -39,7 +40,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.webrtc.AudioTrack
 import org.webrtc.Camera2Capturer
@@ -64,6 +67,18 @@ class WebRtcSessionManagerImpl(
   override val signalingClient: SignalingClient,
   override val peerConnectionFactory: StreamPeerConnectionFactory
 ) : WebRtcSessionManager {
+
+  // Add the TranscriptionManager as a property
+  private val transcriptionManager = TranscriptionManager(context)
+
+  // Add this flow to expose transcription data
+  private val _transcriptionFlow = MutableStateFlow<String>("")
+  override val transcriptionFlow: StateFlow<String> = _transcriptionFlow
+
+  // Add this flow to expose transcription state
+  private val _isTranscribing = MutableStateFlow(false)
+  override val isTranscribing: StateFlow<Boolean> = _isTranscribing
+
   private val logger by taggedLogger("Call:LocalWebRtcSessionManager")
 
   private val sessionManagerScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -188,6 +203,19 @@ class WebRtcSessionManagerImpl(
           }
         }
     }
+
+    // Add these new coroutine launches for transcription
+    sessionManagerScope.launch {
+      transcriptionManager.transcriptionFlow.collect { text ->
+        _transcriptionFlow.value = text
+      }
+    }
+
+    sessionManagerScope.launch {
+      transcriptionManager.isTranscribing.collect { isActive ->
+        _isTranscribing.value = isActive
+      }
+    }
   }
 
   override fun onSessionScreenReady() {
@@ -204,6 +232,17 @@ class WebRtcSessionManagerImpl(
         sendOffer()
       }
     }
+
+    transcriptionManager.initialize()
+  }
+
+  // Add these new methods
+  override fun startTranscription() {
+    transcriptionManager.startTranscription()
+  }
+
+  override fun stopTranscription() {
+    transcriptionManager.stopTranscription()
   }
 
   override fun flipCamera() {
@@ -240,6 +279,9 @@ class WebRtcSessionManagerImpl(
 
     // dispose signaling clients and socket.
     signalingClient.dispose()
+
+    // Release transcription resources
+    transcriptionManager.release()
   }
 
   private suspend fun sendOffer() {

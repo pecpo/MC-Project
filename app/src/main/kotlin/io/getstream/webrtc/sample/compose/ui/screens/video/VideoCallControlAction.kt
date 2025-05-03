@@ -36,6 +36,20 @@ sealed class CallAction {
   object FlipCamera : CallAction()
 
   object LeaveCall : CallAction()
+
+  data class ToggleTranscription(
+    val isEnabled: Boolean
+  ) : CallAction()
+}
+
+@Composable
+fun createTranscriptionAction(isEnabled: Boolean): VideoCallControlAction {
+  return VideoCallControlAction(
+    icon = painterResource(id = if (isEnabled) R.drawable.ic_transcription_on else R.drawable.ic_transcription_off),
+    iconTint = Color.White,
+    background = if (isEnabled) Primary else Primary,
+    callAction = CallAction.ToggleTranscription(isEnabled)
+  )
 }
 
 data class VideoCallControlAction(
