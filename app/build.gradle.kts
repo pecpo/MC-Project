@@ -41,6 +41,8 @@ android {
   packaging {
     resources {
       excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+      excludes.add("META-INF/INDEX.LIST")
+      excludes.add("META-INF/DEPENDENCIES")
     }
   }
 
