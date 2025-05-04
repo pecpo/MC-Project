@@ -31,6 +31,8 @@ playServicesMlkitSubjectSegmentation = "16.0.0-beta1"
 media3Exoplayer = "1.6.1"
 coreKtx = "1.13.0"
 visionCommon = "17.3.0"
+navigationRuntimeAndroid = "2.7.0"
+navigationRuntimeKtx = "2.8.9"
 
 [libraries]
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -74,6 +76,8 @@ play-services-mlkit-subject-segmentation = { group = "com.google.android.gms", n
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
+androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
+androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

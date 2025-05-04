@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
             color = MaterialTheme.colors.background
           ) {
             var showSplash by remember { mutableStateOf(true) }
+            // This state now controls navigation between Stage and Video screens
             var onCallScreen by remember { mutableStateOf(false) }
             val state by sessionManager.signalingClient.sessionStateFlow.collectAsState()
 
@@ -67,14 +68,40 @@ class MainActivity : ComponentActivity() {
               SplashScreen { showSplash = false }
             } else {
               if (!onCallScreen) {
-                StageScreen(state = state) { onCallScreen = true }
+                // Pass lambda to StageScreen to navigate *to* VideoCallScreen
+                StageScreen(state = state) {
+                  // Add any logic needed before joining here if necessary
+                  // For example, you might want to explicitly call sessionManager.join()
+                  // if it's not implicitly handled by onSessionScreenReady()
+                  onCallScreen = true
+                }
               } else {
-                VideoCallScreen()
+                // Pass lambda to VideoCallScreen to navigate *back* to StageScreen
+                VideoCallScreen(
+                  onLeaveCall = { onCallScreen = false } // Pass the callback here
+                )
               }
             }
           }
         }
       }
     }
+  }
+
+  // Optional: Handle back press while on the call screen to leave the call
+  override fun onBackPressed() {
+    // If you want the back button to also leave the call,
+    // you would need access to the `onCallScreen` state and `sessionManager`.
+    // This is more complex as Activity doesn't directly access Compose state easily.
+    // A common pattern is to use a ViewModel or handle this within the Composable
+    // structure using BackHandler. For simplicity, we'll stick to the leave button for now.
+    super.onBackPressed() // Default behavior
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    // Ensure session is cleaned up when activity is destroyed
+    // (This might already be handled in sessionManager implementation, but good practice)
+    // Consider scoping sessionManager to the Activity's lifecycle if not already done.
   }
 }

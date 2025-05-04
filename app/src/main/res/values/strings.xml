@@ -27,4 +27,10 @@
   <string name="button_join_session">Join session</string>
 
   <string name="button_end_session">End Session</string>
+  <string name="acc_mute_microphone">Mute microphone</string>
+  <string name="acc_unmute_microphone">Unmute microphone</string>
+  <string name="acc_turn_off_camera">Turn off camera</string>
+  <string name="acc_turn_on_camera">Turn on camera</string>
+  <string name="acc_flip_camera">Flip camera</string>
+  <string name="acc_leave_call">Leave call</string>
 </resources>

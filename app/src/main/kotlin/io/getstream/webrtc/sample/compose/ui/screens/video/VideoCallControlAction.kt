@@ -1,95 +1,110 @@
-/*
- * Copyright 2023 Stream.IO, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package io.getstream.webrtc.sample.compose.ui.screens.video // Adjust package if needed
 
-package io.getstream.webrtc.sample.compose.ui.screens.video
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CallEnd
+import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
-import io.getstream.webrtc.sample.compose.R
+import androidx.compose.ui.graphics.vector.ImageVector // Import ImageVector
+import androidx.compose.ui.res.stringResource
+import io.getstream.webrtc.sample.compose.R // Still needed for string resources
 import io.getstream.webrtc.sample.compose.ui.theme.Disabled
 import io.getstream.webrtc.sample.compose.ui.theme.Primary
 
+///**
+// * Represents the state relevant for call controls.
+// */
+//data class CallMediaState(
+//  val isMicrophoneEnabled: Boolean = true,
+//  val isCameraEnabled: Boolean = true
+//)
+
+/**
+ * Defines the possible actions a user can take via the call controls.
+ */
 sealed class CallAction {
-  data class ToggleMicroPhone(
-    val isEnabled: Boolean
-  ) : CallAction()
-
-  data class ToggleCamera(
-    val isEnabled: Boolean
-  ) : CallAction()
-
+  data class ToggleMicroPhone(val isEnabled: Boolean) : CallAction()
+  data class ToggleCamera(val isEnabled: Boolean) : CallAction()
   object FlipCamera : CallAction()
-
   object LeaveCall : CallAction()
 }
 
+/**
+ * Data class holding all the necessary information to render a single
+ * video call control button (icon vector, colors, action, description).
+ */
 data class VideoCallControlAction(
-  val icon: Painter,
+  val icon: ImageVector, // Changed type to ImageVector
   val iconTint: Color,
   val background: Color,
-  val callAction: CallAction
+  val callAction: CallAction,
+  val description: String // Accessibility description
 )
 
+/**
+ * Builds the list of [VideoCallControlAction] items using Material Icons,
+ * dynamically adjusting icons, backgrounds, and descriptions based on the [callMediaState].
+ *
+ * @param callMediaState The current state of the microphone and camera.
+ * @return A list of [VideoCallControlAction] ready for rendering.
+ */
 @Composable
 fun buildDefaultCallControlActions(
   callMediaState: CallMediaState
 ): List<VideoCallControlAction> {
-  val microphoneIcon =
-    painterResource(
-      id = if (callMediaState.isMicrophoneEnabled) {
-        R.drawable.ic_mic_on
-      } else {
-        R.drawable.ic_mic_off
-      }
-    )
+  val micEnabled = callMediaState.isMicrophoneEnabled
+  val cameraEnabled = callMediaState.isCameraEnabled
 
-  val cameraIcon = painterResource(
-    id = if (callMediaState.isCameraEnabled) {
-      R.drawable.ic_videocam_on
-    } else {
-      R.drawable.ic_videocam_off
-    }
-  )
+  // --- Microphone Action ---
+  val microphoneIconVector = if (micEnabled) Icons.Default.Mic else Icons.Default.MicOff // Use Material Icon
+  val micBackground = if (micEnabled) Primary else Disabled // Dynamic background
+  val micDescription = stringResource(id = if (micEnabled) R.string.acc_mute_microphone else R.string.acc_unmute_microphone)
 
+  // --- Camera Action ---
+  val cameraIconVector = if (cameraEnabled) Icons.Default.Videocam else Icons.Default.VideocamOff // Use Material Icon
+  val cameraBackground = if (cameraEnabled) Primary else Disabled // Dynamic background
+  val cameraDescription = stringResource(id = if (cameraEnabled) R.string.acc_turn_off_camera else R.string.acc_turn_on_camera)
+
+  // --- Flip Camera Action ---
+  val flipCameraDescription = stringResource(id = R.string.acc_flip_camera)
+
+  // --- Leave Call Action ---
+  val leaveCallDescription = stringResource(id = R.string.acc_leave_call)
+
+
+  // Assemble the list of actions
   return listOf(
     VideoCallControlAction(
-      icon = microphoneIcon,
+      icon = microphoneIconVector, // Pass ImageVector
       iconTint = Color.White,
-      background = Primary,
-      callAction = CallAction.ToggleMicroPhone(callMediaState.isMicrophoneEnabled)
+      background = micBackground,
+      callAction = CallAction.ToggleMicroPhone(micEnabled),
+      description = micDescription
     ),
     VideoCallControlAction(
-      icon = cameraIcon,
+      icon = cameraIconVector, // Pass ImageVector
       iconTint = Color.White,
-      background = Primary,
-      callAction = CallAction.ToggleCamera(callMediaState.isCameraEnabled)
+      background = cameraBackground,
+      callAction = CallAction.ToggleCamera(cameraEnabled),
+      description = cameraDescription
     ),
     VideoCallControlAction(
-      icon = painterResource(id = R.drawable.ic_camera_flip),
+      icon = Icons.Default.Cameraswitch, // Pass ImageVector
       iconTint = Color.White,
       background = Primary,
-      callAction = CallAction.FlipCamera
+      callAction = CallAction.FlipCamera,
+      description = flipCameraDescription
     ),
     VideoCallControlAction(
-      icon = painterResource(id = R.drawable.ic_call_end),
+      icon = Icons.Default.CallEnd, // Pass ImageVector
       iconTint = Color.White,
-      background = Disabled,
-      callAction = CallAction.LeaveCall
+      background = Color.Red, // Or Color.Red
+      callAction = CallAction.LeaveCall,
+      description = leaveCallDescription
     )
   )
 }
