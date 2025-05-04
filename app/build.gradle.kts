@@ -95,4 +95,10 @@ dependencies {
   implementation(libs.androidx.media3.exoplayer)
   implementation(libs.core.ktx)
   implementation(libs.vision.common)
+
+  // google text to speech dependencies
+  implementation("com.google.cloud:google-cloud-speech:1.29.1")
+  implementation( "com.google.auth:google-auth-library-oauth2-http:0.26.0")
+  implementation("io.grpc:grpc-okhttp:1.38.1")
+  implementation("io.grpc:grpc-stub:1.39.0")
 }
