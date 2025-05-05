@@ -33,6 +33,7 @@ coreKtx = "1.13.0"
 visionCommon = "17.3.0"
 navigationRuntimeAndroid = "2.7.0"
 navigationRuntimeKtx = "2.8.9"
+cronetEmbedded = "119.6045.31"
 
 [libraries]
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -78,6 +79,7 @@ core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx"
 vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
 androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
+cronet-embedded = { group = "org.chromium.net", name = "cronet-embedded", version.ref = "cronetEmbedded" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
