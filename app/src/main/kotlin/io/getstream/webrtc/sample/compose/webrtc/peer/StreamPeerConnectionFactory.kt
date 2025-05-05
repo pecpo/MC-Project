@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import io.getstream.log.taggedLogger
 import io.getstream.webrtc.sample.compose.webrtc.BackgroundBlurProcessor
+import io.getstream.webrtc.sample.compose.webrtc.audio.MyAudioProcessor
 import kotlinx.coroutines.CoroutineScope
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -30,6 +31,16 @@ class StreamPeerConnectionFactory constructor(
   private val audioLogger by taggedLogger("Call:AudioTrackCallback")
   private val backgroundBlurProcessor = BackgroundBlurProcessor(context)
 
+  // Create the audio processor instance but handle exceptions
+  private val myAudioProcessor by lazy {
+    try {
+      MyAudioProcessor()
+    } catch (e: Exception) {
+      webRtcLogger.e { "Failed to initialize MyAudioProcessor: ${e.message}" }
+      null
+    }
+  }
+
   val eglBaseContext: EglBase.Context by lazy {
     EglBase.create().eglBaseContext
   }
@@ -52,10 +63,12 @@ class StreamPeerConnectionFactory constructor(
     sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
   }
 
+
   private val videoEncoderFactory by lazy {
     val hardwareEncoder = HardwareVideoEncoderFactory(eglBaseContext, true, true)
     SimulcastVideoEncoderFactory(hardwareEncoder, SoftwareVideoEncoderFactory())
   }
+
 
   private val factory by lazy {
     PeerConnectionFactory.initialize(
@@ -83,75 +96,81 @@ class StreamPeerConnectionFactory constructor(
         .createInitializationOptions()
     )
 
+    // Create a PeerConnectionFactory.Options object
+    val options = PeerConnectionFactory.Options()
+
+    // Build the audio processing module
+    val adm = JavaAudioDeviceModule.builder(context)
+      .setUseHardwareAcousticEchoCanceler(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+      .setUseHardwareNoiseSuppressor(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+      .setAudioRecordErrorCallback(object :
+        JavaAudioDeviceModule.AudioRecordErrorCallback {
+        override fun onWebRtcAudioRecordInitError(p0: String?) {
+          audioLogger.w { "[onWebRtcAudioRecordInitError] $p0" }
+        }
+
+        override fun onWebRtcAudioRecordStartError(
+          p0: JavaAudioDeviceModule.AudioRecordStartErrorCode?,
+          p1: String?
+        ) {
+          audioLogger.w { "[onWebRtcAudioRecordInitError] $p1" }
+        }
+
+        override fun onWebRtcAudioRecordError(p0: String?) {
+          audioLogger.w { "[onWebRtcAudioRecordError] $p0" }
+        }
+      })
+      .setAudioTrackErrorCallback(object :
+        JavaAudioDeviceModule.AudioTrackErrorCallback {
+        override fun onWebRtcAudioTrackInitError(p0: String?) {
+          audioLogger.w { "[onWebRtcAudioTrackInitError] $p0" }
+        }
+
+        override fun onWebRtcAudioTrackStartError(
+          p0: JavaAudioDeviceModule.AudioTrackStartErrorCode?,
+          p1: String?
+        ) {
+          audioLogger.w { "[onWebRtcAudioTrackStartError] $p0" }
+        }
+
+        override fun onWebRtcAudioTrackError(p0: String?) {
+          audioLogger.w { "[onWebRtcAudioTrackError] $p0" }
+        }
+      })
+      .setAudioRecordStateCallback(object :
+        JavaAudioDeviceModule.AudioRecordStateCallback {
+        override fun onWebRtcAudioRecordStart() {
+          audioLogger.d { "[onWebRtcAudioRecordStart] no args" }
+        }
+
+        override fun onWebRtcAudioRecordStop() {
+          audioLogger.d { "[onWebRtcAudioRecordStop] no args" }
+        }
+      })
+      .setAudioTrackStateCallback(object :
+        JavaAudioDeviceModule.AudioTrackStateCallback {
+        override fun onWebRtcAudioTrackStart() {
+          audioLogger.d { "[onWebRtcAudioTrackStart] no args" }
+        }
+
+        override fun onWebRtcAudioTrackStop() {
+          audioLogger.d { "[onWebRtcAudioTrackStop] no args" }
+        }
+      })
+      .createAudioDeviceModule().also {
+        it.setMicrophoneMute(false)
+        it.setSpeakerMute(false)
+      }
+
+    // Build the peer connection factory
     PeerConnectionFactory.builder()
       .setVideoDecoderFactory(videoDecoderFactory)
       .setVideoEncoderFactory(videoEncoderFactory)
-      .setAudioDeviceModule(
-        JavaAudioDeviceModule
-          .builder(context)
-          .setUseHardwareAcousticEchoCanceler(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-          .setUseHardwareNoiseSuppressor(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-          .setAudioRecordErrorCallback(object :
-              JavaAudioDeviceModule.AudioRecordErrorCallback {
-              override fun onWebRtcAudioRecordInitError(p0: String?) {
-                audioLogger.w { "[onWebRtcAudioRecordInitError] $p0" }
-              }
-
-              override fun onWebRtcAudioRecordStartError(
-                p0: JavaAudioDeviceModule.AudioRecordStartErrorCode?,
-                p1: String?
-              ) {
-                audioLogger.w { "[onWebRtcAudioRecordInitError] $p1" }
-              }
-
-              override fun onWebRtcAudioRecordError(p0: String?) {
-                audioLogger.w { "[onWebRtcAudioRecordError] $p0" }
-              }
-            })
-          .setAudioTrackErrorCallback(object :
-              JavaAudioDeviceModule.AudioTrackErrorCallback {
-              override fun onWebRtcAudioTrackInitError(p0: String?) {
-                audioLogger.w { "[onWebRtcAudioTrackInitError] $p0" }
-              }
-
-              override fun onWebRtcAudioTrackStartError(
-                p0: JavaAudioDeviceModule.AudioTrackStartErrorCode?,
-                p1: String?
-              ) {
-                audioLogger.w { "[onWebRtcAudioTrackStartError] $p0" }
-              }
-
-              override fun onWebRtcAudioTrackError(p0: String?) {
-                audioLogger.w { "[onWebRtcAudioTrackError] $p0" }
-              }
-            })
-          .setAudioRecordStateCallback(object :
-              JavaAudioDeviceModule.AudioRecordStateCallback {
-              override fun onWebRtcAudioRecordStart() {
-                audioLogger.d { "[onWebRtcAudioRecordStart] no args" }
-              }
-
-              override fun onWebRtcAudioRecordStop() {
-                audioLogger.d { "[onWebRtcAudioRecordStop] no args" }
-              }
-            })
-          .setAudioTrackStateCallback(object :
-              JavaAudioDeviceModule.AudioTrackStateCallback {
-              override fun onWebRtcAudioTrackStart() {
-                audioLogger.d { "[onWebRtcAudioTrackStart] no args" }
-              }
-
-              override fun onWebRtcAudioTrackStop() {
-                audioLogger.d { "[onWebRtcAudioTrackStop] no args" }
-              }
-            })
-          .createAudioDeviceModule().also {
-            it.setMicrophoneMute(false)
-            it.setSpeakerMute(false)
-          }
-      )
+      .setAudioDeviceModule(adm)
+      .setOptions(options)
       .createPeerConnectionFactory()
   }
+
 
   fun makePeerConnection(
     coroutineScope: CoroutineScope,
@@ -178,6 +197,7 @@ class StreamPeerConnectionFactory constructor(
     )
     return peerConnection.apply { initialize(connection) }
   }
+
 
   private fun makePeerConnectionInternal(
     configuration: PeerConnection.RTCConfiguration,
@@ -207,8 +227,18 @@ class StreamPeerConnectionFactory constructor(
   fun makeAudioSource(constraints: MediaConstraints = MediaConstraints()): AudioSource =
     factory.createAudioSource(constraints)
 
+
   fun makeAudioTrack(
     source: AudioSource,
     trackId: String
   ): AudioTrack = factory.createAudioTrack(trackId, source)
+
+
+  fun dispose() {
+    try {
+      myAudioProcessor?.cleanup()
+    } catch (e: Exception) {
+      webRtcLogger.e { "Error during audio processor cleanup: ${e.message}" }
+    }
+  }
 }

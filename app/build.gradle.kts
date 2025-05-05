@@ -96,4 +96,5 @@ dependencies {
   implementation(libs.core.ktx)
   implementation(libs.vision.common)
   implementation(libs.androidx.compose.material.iconsExtended)
+  implementation(libs.cronet.embedded)
 }
