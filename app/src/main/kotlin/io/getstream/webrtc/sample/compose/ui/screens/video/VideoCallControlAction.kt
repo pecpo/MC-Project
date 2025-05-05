@@ -23,9 +23,7 @@ import io.getstream.webrtc.sample.compose.ui.theme.Primary
 //  val isCameraEnabled: Boolean = true
 //)
 
-/**
- * Defines the possible actions a user can take via the call controls.
- */
+
 sealed class CallAction {
   data class ToggleMicroPhone(val isEnabled: Boolean) : CallAction()
   data class ToggleCamera(val isEnabled: Boolean) : CallAction()
@@ -33,10 +31,7 @@ sealed class CallAction {
   object LeaveCall : CallAction()
 }
 
-/**
- * Data class holding all the necessary information to render a single
- * video call control button (icon vector, colors, action, description).
- */
+
 data class VideoCallControlAction(
   val icon: ImageVector, // Changed type to ImageVector
   val iconTint: Color,
@@ -45,13 +40,6 @@ data class VideoCallControlAction(
   val description: String // Accessibility description
 )
 
-/**
- * Builds the list of [VideoCallControlAction] items using Material Icons,
- * dynamically adjusting icons, backgrounds, and descriptions based on the [callMediaState].
- *
- * @param callMediaState The current state of the microphone and camera.
- * @return A list of [VideoCallControlAction] ready for rendering.
- */
 @Composable
 fun buildDefaultCallControlActions(
   callMediaState: CallMediaState

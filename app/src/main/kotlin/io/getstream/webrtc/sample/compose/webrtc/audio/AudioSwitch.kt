@@ -1,19 +1,3 @@
-/*
- * Copyright 2023 Stream.IO, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package io.getstream.webrtc.sample.compose.webrtc.audio
 
 import android.content.Context
@@ -73,11 +57,7 @@ class AudioSwitch internal constructor(
     }
   }
 
-  /**
-   * Starts listening for audio device changes and calls the [listener] upon each change.
-   * **Note:** When audio device listening is no longer needed, [AudioSwitch.stop] should be
-   * called in order to prevent a memory leak.
-   */
+
   fun start(listener: AudioDeviceChangeListener) {
     logger.d { "[start] state: $state" }
     audioDeviceChangeListener = listener
@@ -91,11 +71,7 @@ class AudioSwitch internal constructor(
     }
   }
 
-  /**
-   * Stops listening for audio device changes if [AudioSwitch.start] has already been
-   * invoked. [AudioSwitch.deactivate] will also get called if a device has been activated
-   * with [AudioSwitch.activate].
-   */
+
   fun stop() {
     logger.d { "[stop] state: $state" }
     when (state) {
@@ -111,12 +87,6 @@ class AudioSwitch internal constructor(
     }
   }
 
-  /**
-   * Performs audio routing and unmuting on the selected device from
-   * [AudioSwitch.selectDevice]. Audio focus is also acquired for the client application.
-   * **Note:** [AudioSwitch.deactivate] should be invoked to restore the prior audio
-   * state.
-   */
   fun activate() {
     logger.d { "[activate] state: $state" }
     when (state) {
@@ -134,10 +104,6 @@ class AudioSwitch internal constructor(
     }
   }
 
-  /**
-   * Restores the audio state prior to calling [AudioSwitch.activate] and removes
-   * audio focus from the client application.
-   */
   private fun deactivate() {
     logger.d { "[deactivate] state: $state" }
     when (state) {
@@ -151,12 +117,6 @@ class AudioSwitch internal constructor(
     }
   }
 
-  /**
-   * Selects the desired [audioDevice]. If the provided [AudioDevice] is not
-   * available, no changes are made. If the provided device is null, one is chosen based on the
-   * specified preferred device list or the following default list:
-   * [BluetoothHeadset], [WiredHeadset], [Earpiece], [Speakerphone].
-   */
   private fun selectDevice(audioDevice: AudioDevice?) {
     logger.d { "[selectDevice] audioDevice: $audioDevice" }
     if (selectedDevice != audioDevice) {
@@ -224,12 +184,7 @@ class AudioSwitch internal constructor(
       logger.v { "[addAvailableAudioDevices] audioDevice: ${audioDevice.simpleName}" }
       when (audioDevice) {
         BluetoothHeadset::class.java -> {
-          /*
-           * Since the there is a delay between receiving the ACTION_ACL_CONNECTED event and receiving
-           * the name of the connected device from querying the BluetoothHeadset proxy class, the
-           * headset name received from the ACTION_ACL_CONNECTED intent needs to be passed into this
-           * function.
-           */
+
         }
         WiredHeadset::class.java -> {
           logger.v {
