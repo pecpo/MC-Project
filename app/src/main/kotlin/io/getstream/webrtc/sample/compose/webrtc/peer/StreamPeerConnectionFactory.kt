@@ -45,9 +45,7 @@ class StreamPeerConnectionFactory constructor(
     EglBase.create().eglBaseContext
   }
 
-  /**
-   * Default video decoder factory used to unpack video from the remote tracks.
-   */
+
   private val videoDecoderFactory by lazy {
     DefaultVideoDecoderFactory(
       eglBaseContext
@@ -65,18 +63,13 @@ class StreamPeerConnectionFactory constructor(
     sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
   }
 
-  /**
-   * Default encoder factory that supports Simulcast, used to send video tracks to the server.
-   */
+
   private val videoEncoderFactory by lazy {
     val hardwareEncoder = HardwareVideoEncoderFactory(eglBaseContext, true, true)
     SimulcastVideoEncoderFactory(hardwareEncoder, SoftwareVideoEncoderFactory())
   }
 
-  /**
-   * Factory that builds all the connections based on the extensive configuration provided under
-   * the hood.
-   */
+
   private val factory by lazy {
     PeerConnectionFactory.initialize(
       PeerConnectionFactory.InitializationOptions.builder(context)
@@ -178,20 +171,7 @@ class StreamPeerConnectionFactory constructor(
       .createPeerConnectionFactory()
   }
 
-  /**
-   * Builds a [StreamPeerConnection] that wraps the WebRTC [PeerConnection] and exposes several
-   * helpful handlers.
-   *
-   * @param coroutineScope Scope used for asynchronous operations.
-   * @param configuration The [PeerConnection.RTCConfiguration] used to set up the connection.
-   * @param type The type of connection, either a subscriber of a publisher.
-   * @param mediaConstraints Constraints used for audio and video tracks in the connection.
-   * @param onStreamAdded Handler when a new [MediaStream] gets added.
-   * @param onNegotiationNeeded Handler when there's a new negotiation.
-   * @param onIceCandidateRequest Handler whenever we receive [IceCandidate]s.
-   * @return [StreamPeerConnection] That's fully set up and can be observed and used to send and
-   * receive tracks.
-   */
+
   fun makePeerConnection(
     coroutineScope: CoroutineScope,
     configuration: PeerConnection.RTCConfiguration,
@@ -218,14 +198,7 @@ class StreamPeerConnectionFactory constructor(
     return peerConnection.apply { initialize(connection) }
   }
 
-  /**
-   * Builds a [PeerConnection] internally that connects to the server and is able to send and
-   * receive tracks.
-   *
-   * @param configuration The [PeerConnection.RTCConfiguration] used to set up the connection.
-   * @param observer Handler used to observe different states of the connection.
-   * @return [PeerConnection] that's fully set up.
-   */
+
   private fun makePeerConnectionInternal(
     configuration: PeerConnection.RTCConfiguration,
     observer: PeerConnection.Observer?
@@ -238,56 +211,29 @@ class StreamPeerConnectionFactory constructor(
     )
   }
 
-  /**
-   * Builds a [VideoSource] from the [factory] that can be used for regular video share (camera)
-   * or screen sharing.
-   *
-   * @param isScreencast If we're screen sharing using this source.
-   * @return [VideoSource] that can be used to build tracks.
-   */
+
   fun makeVideoSource(isScreencast: Boolean): VideoSource =
     factory.createVideoSource(isScreencast).apply {
       setVideoProcessor(backgroundBlurProcessor) // Pass the processor directly
     }
 
-  /**
-   * Builds a [VideoTrack] from the [factory] that can be used for regular video share (camera)
-   * or screen sharing.
-   *
-   * @param source The [VideoSource] used for the track.
-   * @param trackId The unique ID for this track.
-   * @return [VideoTrack] That represents a video feed.
-   */
+
   fun makeVideoTrack(
     source: VideoSource,
     trackId: String
   ): VideoTrack = factory.createVideoTrack(trackId, source)
 
-  /**
-   * Builds an [AudioSource] from the [factory] that can be used for audio sharing.
-   *
-   * @param constraints The constraints used to change the way the audio behaves.
-   * @return [AudioSource] that can be used to build tracks.
-   */
+
   fun makeAudioSource(constraints: MediaConstraints = MediaConstraints()): AudioSource =
     factory.createAudioSource(constraints)
 
-  /**
-   * Builds an [AudioTrack] from the [factory] that can be used for regular video share (camera)
-   * or screen sharing.
-   *
-   * @param source The [AudioSource] used for the track.
-   * @param trackId The unique ID for this track.
-   * @return [AudioTrack] That represents an audio feed.
-   */
+
   fun makeAudioTrack(
     source: AudioSource,
     trackId: String
   ): AudioTrack = factory.createAudioTrack(trackId, source)
 
-  /**
-   * Cleans up resources when the factory is no longer needed.
-   */
+
   fun dispose() {
     try {
       myAudioProcessor?.cleanup()
