@@ -175,6 +175,8 @@ fun VideoCallScreen(
           CallAction.FlipCamera -> sessionManager.flipCamera()
           CallAction.LeaveCall -> {
             sessionManager.disconnect()
+            callMediaState = CallMediaState()
+            callStartTime = null
             onLeaveCall()
           }
         }

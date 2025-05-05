@@ -207,23 +207,34 @@ class WebRtcSessionManagerImpl(
   }
 
   override fun disconnect() {
-    // dispose audio & video tracks.
-    remoteVideoTrackFlow.replayCache.forEach { videoTrack ->
-      videoTrack.dispose()
-    }
-    localVideoTrackFlow.replayCache.forEach { videoTrack ->
-      videoTrack.dispose()
-    }
-    localAudioTrack.dispose()
-    localVideoTrack.dispose()
+    try {
+      // First, stop the video capture to prevent further frame processing
+      videoCapturer.stopCapture()
 
-    // dispose audio handler and video capturer.
-    audioHandler.stop()
-    videoCapturer.stopCapture()
-    videoCapturer.dispose()
+      // Close peer connection
+      peerConnection.connection.dispose()
 
-    // dispose signaling clients and socket.
-    signalingClient.dispose()
+      // Dispose audio & video tracks
+      localVideoTrack.dispose()
+      localAudioTrack.dispose()
+
+      // Release audio resources
+      audioManager?.isMicrophoneMute = false
+      audioHandler.stop()
+
+      // Clean up video resources
+      videoSource.dispose()
+      surfaceTextureHelper.dispose()
+      videoCapturer.dispose()
+
+      // Dispose signaling client
+      signalingClient.dispose()
+
+      // Log successful disconnection
+      logger.d { "Successfully disconnected and released all resources" }
+    } catch (e: Exception) {
+      logger.e { "Error during disconnect: ${e.message}" }
+    }
   }
 
   private suspend fun sendOffer() {
