@@ -1,6 +1,7 @@
 package io.getstream.webrtc.sample.compose
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,7 +59,20 @@ class MainActivity : ComponentActivity() {
               } else {
                 // Pass lambda to VideoCallScreen to navigate *back* to StageScreen
                 VideoCallScreen(
-                  onLeaveCall = { onCallScreen = false } // Pass the callback here
+                  onLeaveCall = {
+                    // First set onCallScreen to false as you were doing
+                    onCallScreen = false
+
+                    // Then add the restart logic
+                    val intent = Intent(this@MainActivity, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                    // Finish all activities and start fresh
+                    finishAffinity()
+
+                    // Start the app again
+                    startActivity(intent)
+                  } // Pass the callback here
                 )
               }
             }
@@ -67,6 +81,8 @@ class MainActivity : ComponentActivity() {
       }
     }
   }
+
+
 
   override fun onBackPressed() {
        super.onBackPressed()
